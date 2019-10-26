@@ -2,15 +2,21 @@
 # Manipulacao das mensagens que vem das variaveis aumentadas
 import numpy as np
 import json
+import time
 from collections import namedtuple
 
+from simulator_client import SimulatorClient
+
+def receiveMessageTest():
+    payload = { "current_1": 0, "error": 1, "machine": 3, "occurrence_nbr": 325, "status": 0, "temperature": 56, "timestamp": "2019-09-07 18:28:38" }
+    statuses = [0,0,0,0,0,1,1,1,0,0,0,0,0]
+    for status in statuses:
+        payload['status'] = status
+        yield payload
+
 def receiveMessage():
+    message_received = SimulatorClient.get_json().json()
 
-    #message_received = {"current_1", "error", "machine", "occurrence_nbr", "variables", "status", "timestamp"}
-    data = open("message.json", "r")
-    message_received = json.loads(data, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-
-    print(message_received)
     return message_received
 
 
@@ -19,12 +25,14 @@ def sendMessage(message_to_operator):
     loop = False
 
 def main():
-    limit_time = 20
+    limit_time = 5
     duration_stop = 0
     loop = True
     passou = 0
-    for i in range(20):
-        msg = receiveMessage()
+    receiveMessage = receiveMessageTest()
+    while True:
+        time.sleep(0.5)
+        msg = next(receiveMessage)
         print(msg)
         if msg["status"] == 0:
             if passou == 0:
@@ -45,7 +53,7 @@ def main():
                                     }
             
             sendMessage(message_to_operator)
-            print("chegou1")
+            print(duration_stop)
 
 
 if __name__ == '__main__':
